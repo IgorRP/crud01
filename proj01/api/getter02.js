@@ -1,6 +1,6 @@
 import mysql from 'mysql2/promise';
 
-export default async function handler(req, res) {
+const getConnectionConfig = () => {
   const {
     TIDB_HOST,
     TIDB_USER,
@@ -10,28 +10,53 @@ export default async function handler(req, res) {
   } = process.env;
 
   if (!TIDB_HOST || !TIDB_USER || !TIDB_PASSWORD || !TIDB_DATABASE) {
-    return res.status(500).json({
-      error:
-        'Missing TiDB configuration. Add TIDB_HOST, TIDB_USER, TIDB_PASSWORD and TIDB_DATABASE in Vercel environment variables.'
-    });
+    throw new Error(
+      'Missing TiDB configuration. Add TIDB_HOST, TIDB_USER, TIDB_PASSWORD and TIDB_DATABASE in Vercel environment variables.'
+    );
   }
 
+  return {
+    host: TIDB_HOST,
+    user: TIDB_USER,
+    password: TIDB_PASSWORD,
+    database: TIDB_DATABASE,
+    port: Number(TIDB_PORT || 4000),
+    ssl: {
+      minVersion: 'TLSv1.2',
+      rejectUnauthorized: true
+    }
+  };
+};
+
+export default async function handler(req, res) {
   let connection;
 
   try {
-    connection = await mysql.createConnection({
-      host: TIDB_HOST,
-      user: TIDB_USER,
-      password: TIDB_PASSWORD,
-      database: TIDB_DATABASE,
-      port: Number(TIDB_PORT || 4000),
-      ssl: {
-        minVersion: 'TLSv1.2',
-        rejectUnauthorized: true
-      }
-    });
+    const config = getConnectionConfig();
+    connection = await mysql.createConnection(config);
 
-    const [rows] = await connection.execute('SELECT * FROM produtos LIMIT 10');
+    if (req.method === 'POST') {
+      const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body ?? {};
+      const nome = String(body.nome ?? '').trim();
+      const preco = Number(body.preco);
+
+      if (!nome || Number.isNaN(preco)) {
+        return res.status(400).json({ error: 'Nome e preço são obrigatórios.' });
+      }
+
+      const [result] = await connection.execute(
+        'INSERT INTO produtos (nome, preco) VALUES (?, ?)',
+        [nome, preco]
+      );
+
+      return res.status(201).json({
+        id: result.insertId,
+        nome,
+        preco
+      });
+    }
+
+    const [rows] = await connection.execute('SELECT * FROM produtos ORDER BY id DESC LIMIT 10');
     return res.status(200).json(rows);
   } catch (error) {
     return res.status(500).json({ error: error.message });
