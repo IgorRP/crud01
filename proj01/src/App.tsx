@@ -21,12 +21,24 @@ export default function App() {
 
   return (
     <div>
-      <h1>Dados do TiDB:</h1>
-      <ul>
-        {data.map((item) => (
-          <li key={item.id}>{item.nome || JSON.stringify(item)}</li>
-        ))}
-      </ul>
+      <h2>Dados do Banco de Dados</h2>
+      <table style={{ border: "1px solid grey", fontFamily: "sans-serif", borderCollapse: "collapse", minWidth: "600px" }}>
+        <thead style={{ backgroundColor: "#f2f2f2", textAlign: "left" }}>
+          <tr>
+            <th style={{ border: "1px solid grey", borderCollapse: "collapse" }}>Nome</th>
+            <th style={{ border: "1px solid grey", borderCollapse: "collapse" }}>Preço</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((item) => (
+            <tr key={item.id}>
+              <td style={{ border: "1px solid grey", borderCollapse: "collapse" }}>{item.nome || 'N/A'}</td>
+              <td style={{ border: "1px solid grey", borderCollapse: "collapse" }}>{item.preco ? `R$ ${item.preco.toFixed(2)}` : 'N/A'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      
     </div>
   );
 }
