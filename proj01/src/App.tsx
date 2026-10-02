@@ -61,6 +61,33 @@ export default function App() {
     }
   };
 
+  async function handleDelete(id: number): Promise<void> {
+    try {
+      const response = await fetch('/api/getter02', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id })
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload.error || 'Erro ao excluir item');
+      }
+
+      await loadData();
+    } catch (error) {
+      console.error(error);
+      alert(error instanceof Error ? error.message : 'Erro ao excluir item');
+    }
+  }
+
+  function handleEdit(id: number): void {
+    console.log('Editar item com id:', id);
+  }
+
   return (
     <div>
       <h2>Cadastro de novos itens</h2>
@@ -96,6 +123,7 @@ export default function App() {
           <tr>
             <th style={{ border: '1px solid grey', borderCollapse: 'collapse' }}>Nome</th>
             <th style={{ border: '1px solid grey', borderCollapse: 'collapse' }}>Preço</th>
+            <th style={{ border: '1px solid grey', borderCollapse: 'collapse' }}>Opções</th>
           </tr>
         </thead>
         <tbody>
@@ -103,6 +131,10 @@ export default function App() {
             <tr key={item.id}>
               <td style={{ border: '1px solid grey', borderCollapse: 'collapse' }}>{item.nome || 'N/A'}</td>
               <td style={{ border: '1px solid grey', borderCollapse: 'collapse' }}>{item.preco !== undefined ? `R$ ${item.preco}` : 'N/A'}</td>
+              <td style={{ border: '1px solid grey', borderCollapse: 'collapse', display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
+                <button onClick={() => handleEdit(item.id)}>Editar</button>
+                <button onClick={() => handleDelete(item.id)}>Excluir</button>
+              </td>
             </tr>
           ))}
         </tbody>

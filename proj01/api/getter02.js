@@ -56,6 +56,18 @@ export default async function handler(req, res) {
       });
     }
 
+    if (req.method === 'DELETE') {
+      const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body ?? {};
+      const id = Number(body.id);
+
+      if (!Number.isInteger(id) || id <= 0) {
+        return res.status(400).json({ error: 'ID inválido.' });
+      }
+
+      await connection.execute('DELETE FROM produtos WHERE id = ?', [id]);
+      return res.status(200).json({ message: 'Item excluído com sucesso.' });
+    }
+
     const [rows] = await connection.execute('SELECT * FROM produtos ORDER BY id DESC LIMIT 10');
     return res.status(200).json(rows);
   } catch (error) {
