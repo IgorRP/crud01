@@ -21,6 +21,14 @@ export default function App() {
 
   return (
     <div>
+      <h2>Cadastro de novos itens</h2>
+
+      <div style={{margin: "20px 0;"}}>
+        <input type="text" id="nome" name="nome" placeholder="Digite o nome" style={{ minWidth: "300px" }} />
+        <input type="number" id="preco" name="preco" placeholder="Digite o preço" step="0.01" />
+        <button id="adicionar" >Adicionar</button>
+    </div>
+
       <h2>Dados do Banco de Dados</h2>
       <table style={{ border: "1px solid grey", fontFamily: "sans-serif", borderCollapse: "collapse", minWidth: "600px" }}>
         <thead style={{ backgroundColor: "#f2f2f2", textAlign: "left" }}>
