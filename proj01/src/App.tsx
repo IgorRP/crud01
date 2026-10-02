@@ -10,10 +10,13 @@ export default function App() {
   const [data, setData] = useState<TiDBItem[]>([]);
 
   useEffect(() => {
+
     fetch('/api/getter02')
       .then((res) => res.json())
       .then((data: TiDBItem[]) => setData(data))
       .catch((err) => console.error(err));
+    
+    
   }, []);
 
   return (
