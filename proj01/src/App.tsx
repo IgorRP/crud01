@@ -8,8 +8,14 @@ interface TiDBItem {
 
 export default function App() {
   const [data, setData] = useState<TiDBItem[]>([]);
+  
   const [nome, setNome] = useState('');
   const [preco, setPreco] = useState('');
+  
+  const [editingItem, setEditingItem] = useState<TiDBItem | null>(null);
+  
+  const [editNome, setEditNome] = useState('');
+  const [editPreco, setEditPreco] = useState('');
 
   const loadData = async () => {
     const response = await fetch('/api/getter02');
@@ -84,8 +90,52 @@ export default function App() {
     }
   }
 
-  function handleEdit(id: number): void {
-    console.log('Editar item com id:', id);
+  function handleEdit(item: TiDBItem): void {
+    setEditingItem(item);
+    setEditNome(item.nome ?? '');
+    setEditPreco(String(item.preco ?? ''));
+  }
+
+  async function handleSaveEdit(): Promise<void> {
+    if (!editingItem) {
+      return;
+    }
+
+    const nomeTrim = editNome.trim();
+    const precoNumber = Number(editPreco);
+
+    if (!nomeTrim || Number.isNaN(precoNumber)) {
+      alert('Preencha nome e preço válidos para edição.');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/getter02', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          id: editingItem.id,
+          nome: nomeTrim,
+          preco: precoNumber
+        })
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok) {
+        throw new Error(payload.error || 'Erro ao atualizar item');
+      }
+
+      setEditingItem(null);
+      setEditNome('');
+      setEditPreco('');
+      await loadData();
+    } catch (error) {
+      console.error(error);
+      alert(error instanceof Error ? error.message : 'Erro ao atualizar item');
+    }
   }
 
   return (
@@ -132,13 +182,57 @@ export default function App() {
               <td style={{ border: '1px solid grey', borderCollapse: 'collapse' }}>{item.nome || 'N/A'}</td>
               <td style={{ border: '1px solid grey', borderCollapse: 'collapse' }}>{item.preco !== undefined ? `R$ ${item.preco}` : 'N/A'}</td>
               <td style={{ border: '1px solid grey', borderCollapse: 'collapse', display: 'flex', justifyContent: 'space-between', gap: '10px' }}>
-                <button onClick={() => handleEdit(item.id)}>Editar</button>
+                <button onClick={() => handleEdit(item)}>Editar</button>
                 <button onClick={() => handleDelete(item.id)}>Excluir</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+
+      {editingItem && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.4)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <div
+            style={{
+              background: '#fff',
+              padding: '20px',
+              borderRadius: '8px',
+              minWidth: '320px'
+            }}
+          >
+            <h3>Editar item</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <input
+                type="text"
+                value={editNome}
+                onChange={(event) => setEditNome(event.target.value)}
+                placeholder="Nome"
+              />
+              <input
+                type="number"
+                step="0.01"
+                value={editPreco}
+                onChange={(event) => setEditPreco(event.target.value)}
+                placeholder="Preço"
+              />
+            </div>
+
+            <div style={{ marginTop: '16px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              <button onClick={() => setEditingItem(null)}>Cancelar</button>
+              <button onClick={handleSaveEdit}>Salvar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

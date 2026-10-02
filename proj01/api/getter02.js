@@ -56,6 +56,20 @@ export default async function handler(req, res) {
       });
     }
 
+    if (req.method === 'PUT') {
+      const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body ?? {};
+      const id = Number(body.id);
+      const nome = String(body.nome ?? '').trim();
+      const preco = Number(body.preco);
+
+      if (!Number.isInteger(id) || id <= 0 || !nome || Number.isNaN(preco)) {
+        return res.status(400).json({ error: 'ID, nome e preço são obrigatórios.' });
+      }
+
+      await connection.execute('UPDATE produtos SET nome = ?, preco = ? WHERE id = ?', [nome, preco, id]);
+      return res.status(200).json({ id, nome, preco, message: 'Item atualizado com sucesso.' });
+    }
+
     if (req.method === 'DELETE') {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body ?? {};
       const id = Number(body.id);
