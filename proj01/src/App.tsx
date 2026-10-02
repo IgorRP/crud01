@@ -33,7 +33,7 @@ export default function App() {
           {data.map((item) => (
             <tr key={item.id}>
               <td style={{ border: "1px solid grey", borderCollapse: "collapse" }}>{item.nome || 'N/A'}</td>
-              <td style={{ border: "1px solid grey", borderCollapse: "collapse" }}>{item.preco ? `R$ ${item.preco.toFixed(2)}` : 'N/A'}</td>
+              <td style={{ border: "1px solid grey", borderCollapse: "collapse" }}>{item.preco ? `R$ ${item.preco}` : 'N/A'}</td>
             </tr>
           ))}
         </tbody>
