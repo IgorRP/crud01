@@ -1,22 +1,25 @@
 import { useEffect, useState, type FormEvent } from 'react';
 
+//cria um objeto de interface para definir a estrutura dos itens do banco de dados
 interface TiDBItem {
   id: number;
   nome?: string;
   preco?: number;
 }
 
+//exporta o módulo app
 export default function App() {
+  //estados dos objetos exibidos em tela
   const [data, setData] = useState<TiDBItem[]>([]);
-  
   const [nome, setNome] = useState('');
   const [preco, setPreco] = useState('');
   
+  //estados dos objetos editados em tela
   const [editingItem, setEditingItem] = useState<TiDBItem | null>(null);
-  
   const [editNome, setEditNome] = useState('');
   const [editPreco, setEditPreco] = useState('');
 
+  //funcao para carregamento inicial dos dados do banco de dados
   const loadData = async () => {
     const response = await fetch('/api/getter02');
 
@@ -32,6 +35,7 @@ export default function App() {
     loadData().catch((err) => console.error(err));
   }, []);
 
+  //funcao para envio de novos dados do formulario para o banco de dados
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
@@ -67,6 +71,7 @@ export default function App() {
     }
   };
 
+  //funcao para exclusao de registros do banco de dados
   async function handleDelete(id: number): Promise<void> {
     try {
       const response = await fetch('/api/getter02', {
@@ -90,12 +95,14 @@ export default function App() {
     }
   }
 
+  //funcao para abrir o modal de edicao
   function handleEdit(item: TiDBItem): void {
     setEditingItem(item);
     setEditNome(item.nome ?? '');
     setEditPreco(String(item.preco ?? ''));
   }
 
+  //funcao para o salvamento das edicoes no banco de dados
   async function handleSaveEdit(): Promise<void> {
     if (!editingItem) {
       return;
@@ -138,6 +145,7 @@ export default function App() {
     }
   }
 
+  //inteface renderizada
   return (
     <div>
       <h2>Cadastro de novos itens</h2>

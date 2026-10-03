@@ -1,5 +1,6 @@
 import mysql from 'mysql2/promise';
 
+//funcao para obter a configuracao de conexao com o banco de dados TiDB
 const getConnectionConfig = () => {
   const {
     TIDB_HOST,
@@ -28,6 +29,7 @@ const getConnectionConfig = () => {
   };
 };
 
+//retorno das requisicoes HTTP para a API
 export default async function handler(req, res) {
   let connection;
 
@@ -35,6 +37,7 @@ export default async function handler(req, res) {
     const config = getConnectionConfig();
     connection = await mysql.createConnection(config);
 
+    //metodo POST para insercao de novos registros no banco de dados
     if (req.method === 'POST') {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body ?? {};
       const nome = String(body.nome ?? '').trim();
@@ -56,6 +59,7 @@ export default async function handler(req, res) {
       });
     }
 
+    //metodo PUT para atualizacao de registros existentes no banco de dados
     if (req.method === 'PUT') {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body ?? {};
       const id = Number(body.id);
@@ -70,6 +74,7 @@ export default async function handler(req, res) {
       return res.status(200).json({ id, nome, preco, message: 'Item atualizado com sucesso.' });
     }
 
+    //metodo DELETE para exclusao de registros existentes no banco de dados
     if (req.method === 'DELETE') {
       const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body ?? {};
       const id = Number(body.id);
@@ -82,7 +87,8 @@ export default async function handler(req, res) {
       return res.status(200).json({ message: 'Item excluído com sucesso.' });
     }
 
-    const [rows] = await connection.execute('SELECT * FROM produtos ORDER BY id DESC LIMIT 10');
+    //metodo GET para recuperacao de registros do banco de dados
+    const [rows] = await connection.execute('SELECT * FROM produtos ORDER BY id DESC LIMIT 50');
     return res.status(200).json(rows);
   } catch (error) {
     return res.status(500).json({ error: error.message });
